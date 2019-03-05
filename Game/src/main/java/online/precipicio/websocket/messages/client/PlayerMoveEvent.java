@@ -34,7 +34,7 @@ public class PlayerMoveEvent implements Event {
         }
         room.setPlayingSession(null);
         room.getArena().moveUserToDirection(session.getArenaPlayer(), direction);
-        room.broadcast(new PlayerMovement(direction), session);
+        room.broadcast(new PlayerMovement(session.getId(),direction), session);
         session.getArenaPlayer().getTimeoutSchedule().cancel(true);
         session.getArenaPlayer().setTimeoutSchedule(null);
         room.requestSessionMove();

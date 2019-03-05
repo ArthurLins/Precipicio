@@ -85,27 +85,26 @@ public class Arena {
 
 
     public void killPlayer(ArenaPlayer arenaPlayer){
-        System.out.println("MORTO:"+ arenaPlayer);
         room.getAliveSessions().remove(arenaPlayer.getSession());
+        System.out.println("["+arenaPlayer.getSession().getName()+"] Morreu");
         if (room.getAliveSessions().size() == 1){
             room.gameOver();
         }
     }
 
     public void moveUserToDirection(ArenaPlayer arenaPlayer, Direction direction) {
-
         switch(direction) {
             case UP:
-                this.moveUserToCoords(arenaPlayer, -1, 0, direction);
-                break;
-            case DOWN:
-                this.moveUserToCoords(arenaPlayer, +1, 0, direction);
-                break;
-            case LEFT:
                 this.moveUserToCoords(arenaPlayer, 0, -1, direction);
                 break;
-            case RIGHT:
+            case DOWN:
                 this.moveUserToCoords(arenaPlayer, 0, +1, direction);
+                break;
+            case LEFT:
+                this.moveUserToCoords(arenaPlayer, -1, 0, direction);
+                break;
+            case RIGHT:
+                this.moveUserToCoords(arenaPlayer, +1, 0, direction);
                 break;
         }
     }
@@ -129,7 +128,6 @@ public class Arena {
 
         if(!arenaPlayer.isValidMove(newSlot.getX(), newSlot.getY()))
         {
-            //console.error("[GAME][MOVE] Invalid position given.");
             return;
         }
 

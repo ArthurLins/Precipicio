@@ -1,6 +1,7 @@
 package online.precipicio.websocket.messages.server;
 
 import online.precipicio.websocket.headers.Messages;
+import online.precipicio.websocket.messages.structs.ArenaPlayerJson;
 import online.precipicio.websocket.messages.structs.UserJson;
 import online.precipicio.websocket.sessions.Session;
 import online.precipicio.websocket.types.ServerMessage;
@@ -22,11 +23,9 @@ public class NextRound extends ServerMessage {
     @Override
     public void compose() {
         writeInt("r",this.roundCount);
-        List<UserJson> activeUsers = new ArrayList<>();
+        List<ArenaPlayerJson> activeUsers = new ArrayList<>();
         for (Session session : sessions){
-            System.out.println();
-            activeUsers.add(new UserJson(session.getId(), session.getName(), session.getArenaPlayer().getColor(),
-                    session.getArenaPlayer().getX(), session.getArenaPlayer().getY()));
+            activeUsers.add(new ArenaPlayerJson(session.getId(), session.getArenaPlayer().getX(), session.getArenaPlayer().getY()));
         }
         writeObject("a", activeUsers);
     }

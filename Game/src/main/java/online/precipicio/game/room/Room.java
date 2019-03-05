@@ -35,14 +35,14 @@ public class Room {
         this.state = RoomState.WAITING;
         this.uuid = uuid;
 
-        this.arena = new Arena(this,5,6);
+        this.arena = new Arena(this,6,5);
         this.sessions = new CopyOnWriteArrayList<>();
         this.aliveSessions = new CopyOnWriteArrayList<>();
         //));
     }
 
 
-    public void addUser(Session session, String color){
+    public void addUser(Session session){
         if (this.state == RoomState.STARTED){
             return;
         }
@@ -53,15 +53,20 @@ public class Room {
             return;
         }
         sessions.add(session);
-        ArenaPlayer arenaPlayer = new ArenaPlayer(session, color);
+        ArenaPlayer arenaPlayer = new ArenaPlayer(session);
 
         session.setArenaPlayer(arenaPlayer);
         session.setRoom(this);
 
+
+
         //Transmit to users
-        session.send(new SelfJoin(session.getId(), session.getName(), color, arenaPlayer.getX(), arenaPlayer.getY(), sessions));
         session.send(new RoomInfos(this.uuid));
-        broadcast(new PlayerJoin(session.getId(), session.getName(), color, arenaPlayer.getX(), arenaPlayer.getY()), session);
+        //
+        String randomImg = "https://api.adorable.io/avatars/285/"+session.getId()+session.getName();
+
+        session.send(new SelfJoin(session.getId(), session.getName(), randomImg,10,randomImg, sessions));
+        broadcast(new PlayerJoin(session.getId(), session.getName(), randomImg, 10, randomImg), session);
 
         //time
         if((sessions.size()) == 6){

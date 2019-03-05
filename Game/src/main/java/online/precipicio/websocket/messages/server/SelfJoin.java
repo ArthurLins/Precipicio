@@ -13,35 +13,29 @@ public class SelfJoin extends ServerMessage {
 
     private final long id;
     private final String name;
-    private final String color;
-    private final int x;
-    private final int y;
+    private final String avatar;
+    private final int level;
+    private final String skin;
+
     private final List<Session> sessions;
 
-    public SelfJoin(long id, String name, String color, int x, int y, List<Session> sessions) {
+    public SelfJoin(long id, String name, String avatar, int level, String skin, List<Session> sessions) {
         super(Messages.SELF_JOIN);
         this.id = id;
         this.name = name;
-        this.color = color;
-        this.x = x;
-        this.y = y;
-        this.sessions = sessions.stream().filter((session -> session.getId() != id)).collect(Collectors.toList());
+        this.avatar = avatar;
+        this.level = level;
+        this.skin = skin;
+        this.sessions = sessions;
     }
 
     @Override
     public void compose() {
-        writeLong("i", this.id);
-        writeString("n", this.name);
-        writeString("c", this.color);
-        writeInt("x", this.x);
-        writeInt("y", this.y);
-        writeInt("t", 15);
-        writeInt("rc", 5);
+        writeObject("me", new UserJson(id,name,avatar,level,skin));
         List<UserJson> activeUsers = new ArrayList<>();
         for (Session session : sessions){
-            System.out.println();
-            activeUsers.add(new UserJson(session.getId(), session.getName(), session.getArenaPlayer().getColor(),
-                    session.getArenaPlayer().getX(), session.getArenaPlayer().getY()));
+            if (session.getId() == this.id) continue;
+            activeUsers.add(new UserJson(session.getId(),session.getName(), session.getAvatar(), 10, session.getAvatar()));
         }
         writeObject("a", activeUsers);
     }

@@ -10,7 +10,6 @@ import java.util.List;
 
 public abstract class ServerMessage {
 
-
     private Messages head;
     private JsonObject body;
 
@@ -53,7 +52,6 @@ public abstract class ServerMessage {
         List<Object> objects = new ArrayList<>();
         objects.add(0, this.head.getVal());
         objects.add(1, body);
-        System.out.println(Json.getInstance().stringify(Json.getInstance().toJsonTree(objects)));
         return Json.getInstance().stringify(Json.getInstance().toJsonTree(objects));
     }
 }

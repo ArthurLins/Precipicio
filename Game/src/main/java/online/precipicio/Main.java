@@ -6,6 +6,8 @@ import online.precipicio.websocket.WebSocketEventHandler;
 import online.precipicio.websocket.WebSocketServer;
 import org.reflections.Reflections;
 
+import java.util.Scanner;
+
 
 public class Main {
 
@@ -20,6 +22,21 @@ public class Main {
         WebSocketServer.getInstance().initialize();
         StatsUtil.getInstance().start();
 
+        Thread thread = new Thread(()->{
+            Scanner scanner = new Scanner(System.in);
+            while (true){
+                String command = scanner.nextLine();
+
+                switch (command){
+
+
+
+                }
+
+            }
+        });
+        thread.setName("Console-Commands-Thread");
+        thread.start();
         //Table table = new Table(6,5);
 
        // ArenaPlayer player = new ArenaPlayer();

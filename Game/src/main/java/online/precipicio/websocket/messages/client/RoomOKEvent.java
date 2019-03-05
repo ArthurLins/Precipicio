@@ -1,18 +1,15 @@
 package online.precipicio.websocket.messages.client;
 
-import online.precipicio.game.room.RoomManager;
 import online.precipicio.websocket.headers.UserEvents;
+import online.precipicio.websocket.messages.server.SelfJoin;
 import online.precipicio.websocket.types.ClientMessage;
 import online.precipicio.websocket.types.Event;
 import online.precipicio.websocket.types.UserEvent;
 
-@UserEvent(id=UserEvents.JOIN_ROOM)
-public class JoinRoomEvent implements Event {
-
+@UserEvent(id= UserEvents.ROOM_OK)
+public class RoomOKEvent implements Event {
     @Override
     public void handle(ClientMessage message) {
-        //String uuid = message.readString();
-        //String color = message.readString();
-        RoomManager.getInstance().joinRoom(message.readString("r"), message.getSession());
+        //message.getSession().send(new SelfJoin());
     }
 }

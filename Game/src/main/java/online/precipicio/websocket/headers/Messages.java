@@ -9,6 +9,7 @@ public enum Messages {
     PLAYER_TURN(5),
     PLAYER_MOVEMENT(6),
     ROOM_INFOS(7),
+    CHAT_MESSAGE(8),
     //PLAYER_TURN_TIMEOUT(1),
 
     //GAME_START(4),

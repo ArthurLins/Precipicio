@@ -28,10 +28,10 @@ public class RoomManager {
         StatsUtil.getInstance().addRoom();
     }
 
-    public void joinRoom(String uuid, Session session, String color){
+    public void joinRoom(String uuid, Session session){
         if (rooms.containsKey(uuid)){
-            rooms.get(uuid).addUser(session, color);
-            logger.debug("USER JOIN JOIN: " + session.getId()+ " | Color: "+ color);
+            rooms.get(uuid).addUser(session);
+            logger.debug("USER JOIN JOIN: " + session.getId());
         }
     }
 

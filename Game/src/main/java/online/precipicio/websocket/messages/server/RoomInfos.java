@@ -15,5 +15,7 @@ public class RoomInfos extends ServerMessage {
     @Override
     public void compose() {
         writeString("i", uuid);
+        writeInt("tt", 15);
+        writeInt("rc", 5);
     }
 }

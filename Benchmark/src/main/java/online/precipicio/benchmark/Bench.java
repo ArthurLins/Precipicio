@@ -23,7 +23,7 @@ public class Bench {
             for (int j = 0; j < 5; j++) {
                 try {
                     WebSocketClient clientPlayer = new WebSocketClient("ws://127.0.0.1:8081?username=ddjdjd");
-                    System.out.println("JOININ ROOM: " + roomId);
+                    //System.out.println("JOININ ROOM: " + roomId);
                     clientPlayer.open();
                     clientPlayer.eval("[4,{\"r\":\"" + roomId + "\", \"c\":\"red\"}]");
                 } catch (Exception e) {

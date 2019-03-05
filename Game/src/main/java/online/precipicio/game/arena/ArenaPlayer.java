@@ -9,14 +9,14 @@ public class ArenaPlayer {
     private int x;
     private int y;
 
-    private String color;
+    private String skin;
 
     private Session session;
     private Future timeoutSchedule;
 
-    public ArenaPlayer(Session session, String color){
+    public ArenaPlayer(Session session){
         this.session = session;
-        this.color = color;
+        this.skin = "";
     }
 
 
@@ -44,8 +44,8 @@ public class ArenaPlayer {
         this.y = y;
     }
 
-    public String getColor() {
-        return color;
+    public String getSkin() {
+        return skin;
     }
 
     public Future getTimeoutSchedule() {
@@ -56,7 +56,7 @@ public class ArenaPlayer {
         this.timeoutSchedule = timeoutSchedule;
     }
 
-    public void setColor(String color) {
-        this.color = color;
+    public void setSkin(String color) {
+        this.skin = color;
     }
 }

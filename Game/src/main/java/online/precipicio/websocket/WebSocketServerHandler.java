@@ -44,14 +44,6 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<WebSocke
         SessionManager.getInstance().addSession(ctx.channel(), params.get("username"));
         logger.info("ADD Session (Total: "+ SessionManager.getInstance().activeSessions()+")");
         StatsUtil.getInstance().addSession();
-        if (params.containsKey("room") && params.containsKey("color")){
-            Session session = SessionManager.getInstance().getSession(ctx.channel().attr(WS_SESSION_ID).get());
-            if (session != null){
-                //Todo:: Need Validation;
-                RoomManager.getInstance().joinRoom(params.get("room"), session, params.get("color"));
-            }
-        }
-
     }
 
     @Override

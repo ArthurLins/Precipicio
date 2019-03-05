@@ -5,14 +5,20 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import online.precipicio.game.arena.ArenaPlayer;
 import online.precipicio.game.room.Room;
 import online.precipicio.websocket.types.ServerMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 
 public class Session {
 
+    private Logger logger = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
     private final long id;
     private final String name;
+    private String avatar;
     private final Channel channel;
+
     private Room room;
     private ArenaPlayer arenaPlayer;
 
@@ -33,7 +39,9 @@ public class Session {
 
     public void send(ServerMessage message){
         message.compose();
-        channel.writeAndFlush(new TextWebSocketFrame(message.serialize()));
+        final String txtMsg = message.serialize();
+        logger.info(" ["+this.name+"] - "+txtMsg);
+        channel.writeAndFlush(new TextWebSocketFrame(txtMsg));
     }
 
 
@@ -66,5 +74,13 @@ public class Session {
             return ((Session) obj).id == id;
         }
         return super.equals(obj);
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 }
