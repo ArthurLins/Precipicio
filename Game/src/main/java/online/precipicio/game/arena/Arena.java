@@ -5,13 +5,13 @@ import online.precipicio.game.room.RoomState;
 import online.precipicio.game.util.ArenaSpawnUtil;
 import online.precipicio.game.util.Direction;
 import online.precipicio.game.util.Position;
+import online.precipicio.websocket.sessions.Session;
 
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Arena {
-
-
 
     private int width;
     private int length;
@@ -20,6 +20,7 @@ public class Arena {
 
 
     private List<Position> spawnPositions;
+    private List<ArenaPlayer> alivePlayers;
 
 
 
@@ -28,11 +29,11 @@ public class Arena {
         this.squares = new Square[width][length];
         this.width = width;
         this.length = length;
+        this.alivePlayers = new CopyOnWriteArrayList<>();
         generateSpawns();
         generate();
     }
 
-    //Todo: Refactor
     private void generate(){
         for(int y = 0; y < this.length; y++) {
             for(int x = 0; x < this.width; x++) {
@@ -41,7 +42,7 @@ public class Arena {
         }
     }
 
-    public Position getRandomSpawnPoint(){
+    private Position getRandomSpawnPoint(){
         if (spawnPositions.isEmpty()){
             return null;
         }
@@ -59,12 +60,15 @@ public class Arena {
 
     public void spawnPlayer(ArenaPlayer arenaPlayer){
         Position pos = getRandomSpawnPoint();
+        if (pos == null){
+            return;
+        }
         setPlayerPos(arenaPlayer, pos.getX(), pos.getY());
-        //arenaPlayer.getSession().send(new SpawnPlayerMessage(arenaPlayer));
+        alivePlayers.add(arenaPlayer);
     }
 
 
-    public void setPlayerPos(ArenaPlayer arenaPlayer, int x, int y){
+    private void setPlayerPos(ArenaPlayer arenaPlayer, int x, int y){
         Square square = this.getSquare(x,y);
 
         if (square == null){
@@ -75,7 +79,7 @@ public class Arena {
         square.setArenaPlayer(arenaPlayer);
     }
 
-    public Square getSquare(int x, int y){
+    private Square getSquare(int x, int y){
         try {
             return squares[x][y];
         } catch (ArrayIndexOutOfBoundsException e){
@@ -84,80 +88,106 @@ public class Arena {
     }
 
 
-    public void killPlayer(ArenaPlayer arenaPlayer){
-        room.getAliveSessions().remove(arenaPlayer.getSession());
-        System.out.println("["+arenaPlayer.getSession().getName()+"] Morreu");
-        if (room.getAliveSessions().size() == 1){
+    private void killPlayer(ArenaPlayer arenaPlayer){
+        alivePlayers.remove(arenaPlayer);
+        System.out.println("["+arenaPlayer.getSession().getName()+"] Morreu " + alivePlayers.size());
+        if (alivePlayers.size() == 1){
             room.gameOver();
         }
     }
 
-    public void moveUserToDirection(ArenaPlayer arenaPlayer, Direction direction) {
+    public void movePlayer(ArenaPlayer player, Direction direction) {
+        if (player == null){
+            return;
+        }
+
+        int x = player.getX();
+        int y = player.getY();
+
+        Square oldSquere = this.getSquare(x, y);
+
+        if (oldSquere == null){
+            return;
+        }
+        oldSquere.removePlayer();
+
         switch(direction) {
             case UP:
-                this.moveUserToCoords(arenaPlayer, 0, -1, direction);
+                y--;
                 break;
             case DOWN:
-                this.moveUserToCoords(arenaPlayer, 0, +1, direction);
+                y++;
                 break;
             case LEFT:
-                this.moveUserToCoords(arenaPlayer, -1, 0, direction);
+                x--;
                 break;
             case RIGHT:
-                this.moveUserToCoords(arenaPlayer, +1, 0, direction);
+                x++;
                 break;
         }
+
+        Square newSquare = this.getSquare(x, y);
+
+        if (newSquare == null) {
+            killPlayer(player);
+        } else {
+            if (newSquare.getArenaPlayer() != null){
+                this.movePlayer(newSquare.getArenaPlayer(), direction);
+            }
+            newSquare.setArenaPlayer(player);
+            player.setX(x);
+            player.setY(y);
+        }
     }
-
-
-    public void moveUserToCoords(ArenaPlayer arenaPlayer, int x, int y, Direction direction) {
-        if (arenaPlayer == null)
-            return;
-
-        int oldX = arenaPlayer.getX();
-        int oldY = arenaPlayer.getY();
-
-        Square oldSlot = this.getSquare(oldX, oldY);
-        Square newSlot = this.getSquare(oldX+x, oldY+y);
-
-        if (newSlot == null)
-        {
-            this.killPlayer(arenaPlayer);
-            return;
-        }
-
-        if(!arenaPlayer.isValidMove(newSlot.getX(), newSlot.getY()))
-        {
-            return;
-        }
-
-        if (newSlot.getArenaPlayer() != null)
-        {
-            this.moveUserToDirection(newSlot.getArenaPlayer(), direction);
-        }
-
-        oldSlot.removePlayer();
-        newSlot.setArenaPlayer(arenaPlayer);
-
-        arenaPlayer.setX(newSlot.getX());
-        arenaPlayer.setY(newSlot.getY());
-    }
-
 
     public void removePlayer(ArenaPlayer arenaPlayer){
+        alivePlayers.remove(arenaPlayer);
         Square square = getSquare(arenaPlayer.getX(), arenaPlayer.getY());
+        if (square == null){
+            return;
+        }
         if (square.getArenaPlayer() != null){
             if (room.getState() == RoomState.WAITING){
-                //Add spawn slot;
                 spawnPositions.add(new Position(arenaPlayer.getX(), arenaPlayer.getY()));
             }
             square.removePlayer();
         }
     }
 
+    public void reset(){
+        generateSpawns();
+        alivePlayers.clear();
+        for (Session session : room.getSessions()){
+            spawnPlayer(session.getArenaPlayer());
+        }
+    }
 
-    public void generateSpawns(){
+    public ArenaPlayer getNextMove(){
+        if (this.alivePlayers.isEmpty()){
+            this.room.gameOver();
+            return null;
+        }
+
+        Random rand = new Random();
+        int val = rand.nextInt(alivePlayers.size());
+        return alivePlayers.get(val);
+    }
+
+
+    public List<ArenaPlayer> getAlivePlayers() {
+        return alivePlayers;
+    }
+
+    private void generateSpawns(){
         spawnPositions = ArenaSpawnUtil.getSpawnList();
+    }
+
+    public long getWinnerId(){
+        if (alivePlayers.size() > 1){
+            return 0;
+        } else {
+            return alivePlayers.stream().findFirst().map((arenaPlayer -> (arenaPlayer.getSession().getId()))).orElse(0L);
+        }
     }
 
 }

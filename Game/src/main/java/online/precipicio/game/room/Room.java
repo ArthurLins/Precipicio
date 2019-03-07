@@ -8,36 +8,42 @@ import online.precipicio.websocket.messages.server.*;
 import online.precipicio.websocket.sessions.Session;
 import online.precipicio.websocket.types.ServerMessage;
 
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Room {
 
     private String uuid;
     private List<Session> sessions;
-    private List<Session> aliveSessions;
     private Arena arena;
     private RoomState state;
+
+    private AtomicBoolean roundFinished = new AtomicBoolean(false);
 
     private int timeout; //seconds
     private int maxRounds;
     private int roundCount;
+    private int maxPlayers;
+    private int width;
+    private int height;
 
     private volatile Session playingSession;
 
     public Room(String uuid){
 
         timeout = 15;
-        maxRounds = 5;
+        maxRounds = 10;
         roundCount = 0;
+        maxPlayers = 6;
+        width = 6;
+        height = 5;
 
         this.state = RoomState.WAITING;
         this.uuid = uuid;
 
-        this.arena = new Arena(this,6,5);
+        this.arena = new Arena(this,width,height);
         this.sessions = new CopyOnWriteArrayList<>();
-        this.aliveSessions = new CopyOnWriteArrayList<>();
         //));
     }
 
@@ -46,7 +52,7 @@ public class Room {
         if (this.state == RoomState.STARTED){
             return;
         }
-        if (sessions.size() == 6) {
+        if (sessions.size() == this.maxPlayers) {
             return;
         }
         if (sessions.contains(session)){
@@ -61,7 +67,7 @@ public class Room {
 
 
         //Transmit to users
-        session.send(new RoomInfos(this.uuid));
+        session.send(new RoomInfos(this.uuid, timeout, maxRounds, width, height));
         //
         String randomImg = "https://api.adorable.io/avatars/285/"+session.getId()+session.getName();
 
@@ -69,7 +75,7 @@ public class Room {
         broadcast(new PlayerJoin(session.getId(), session.getName(), randomImg, 10, randomImg), session);
 
         //time
-        if((sessions.size()) == 6){
+        if((sessions.size()) == this.maxPlayers){
             StatsUtil.getInstance().addStartedRoom();
             this.state = RoomState.STARTED;
             nextRound();
@@ -80,10 +86,27 @@ public class Room {
         long id = session.getId();
         arena.removePlayer(session.getArenaPlayer());
         sessions.remove(session);
-
+        if (this.state == RoomState.STARTED){
+            if (sessions.size() <= 1){
+               stopGame();
+            } else {
+                if (playingSession == session){
+                    requestSessionMove();
+                }
+            }
+        }
         broadcast(new PlayerLeave(id));
     }
 
+    private void stopGame() {
+
+        if (sessions.isEmpty()){
+            //Dispose room
+        }
+        this.roundCount = 0;
+        this.state = RoomState.WAITING;
+        broadcast(new GameStoped());
+    }
 
     public void broadcast(ServerMessage message){
         sessions.forEach((s)-> s.send(message));
@@ -101,6 +124,7 @@ public class Room {
 
 
     public void nextRound(){
+        System.out.println("NOVO ROUND");
         if (this.state != RoomState.STARTED){
             return;
         }
@@ -108,28 +132,25 @@ public class Room {
             gameOver();
             return;
         }
+
+        final long winnerId = arena.getWinnerId();
+
         this.roundCount++;
-        arena.generateSpawns();
-        aliveSessions.addAll(sessions);
-        assignPositions();
-        broadcast(new NextRound(this.roundCount, aliveSessions));
+        arena.reset();
+
+        broadcast(new NextRound(this.roundCount, arena.getAlivePlayers(), winnerId));
         requestSessionMove();
     }
 
-    private void assignPositions() {
-        for (Session session : sessions){
-            arena.spawnPlayer(session.getArenaPlayer());
-        }
-    }
 
-    public Session getNextMoveSession(){
-        if (aliveSessions.isEmpty()){
+    private Session getNextMoveSession(){
+        if (arena.getAlivePlayers().isEmpty()){
             gameOver();
             return null;
         }
         Random rand = new Random();
-        int val = rand.nextInt(aliveSessions.size());
-        return aliveSessions.get(val);
+        int val = rand.nextInt(arena.getAlivePlayers().size());
+        return arena.getAlivePlayers().get(val).getSession();
     }
 
     public void requestSessionMove(){
@@ -141,7 +162,12 @@ public class Room {
 
         playingSession = session;
         broadcast(new PlayerTurn(session.getId()));
-        session.getArenaPlayer().setTimeoutSchedule(ThreadPool.getInstance().shedule(this::requestSessionMove, timeout));
+        session.getArenaPlayer().setTimeoutSchedule(ThreadPool.getInstance().shedule(()->{
+            if (roundFinished.get()){
+                return;
+            }
+            requestSessionMove();
+        }, timeout));
 
     }
 
@@ -152,7 +178,7 @@ public class Room {
             this.state = RoomState.WAITING;
             return;
         }
-        nextRound();
+        ThreadPool.getInstance().shedule(this::nextRound, 2);
     }
 
 
@@ -173,11 +199,12 @@ public class Room {
         this.playingSession = playingSession;
     }
 
+    public List<Session> getSessions() {
+        return sessions;
+    }
+
     public Arena getArena() {
         return arena;
     }
 
-    public List<Session> getAliveSessions() {
-        return aliveSessions;
-    }
 }

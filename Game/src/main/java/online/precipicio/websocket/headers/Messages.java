@@ -14,7 +14,8 @@ public enum Messages {
 
     //GAME_START(4),
     //GAME_STOP(5),
-    GAME_NEXT_ROUND(4);
+    GAME_NEXT_ROUND(4),
+    GAME_STOPPED(9);
     //GAME_WINNER(6),
     //GAME_TIMEOUT(7);
 

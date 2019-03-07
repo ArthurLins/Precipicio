@@ -38,7 +38,7 @@ public class WebSocketServer {
 
         this.isEpollEnabled = true;
         this.isEpollAvailable = Epoll.isAvailable();
-        final int defaultThreadCount = 16;
+        final int defaultThreadCount = 20;
 
 
         if (isEpollAvailable && isEpollEnabled) {
@@ -78,7 +78,7 @@ public class WebSocketServer {
         });
         this.serverBootstrap.childOption(ChannelOption.TCP_NODELAY, true);
         this.serverBootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
-        this.serverBootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
+        //this.serverBootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
         try {
             this.serverBootstrap.bind(new InetSocketAddress("127.0.0.1", port));
 

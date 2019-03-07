@@ -14,7 +14,7 @@ public class SessionManager {
         return ourInstance;
     }
 
-    private AtomicLong ids = new AtomicLong(0);
+    private AtomicLong ids = new AtomicLong(1);
     private ConcurrentHashMap<Long, Session> sessions = new ConcurrentHashMap<>();
 
 
@@ -39,7 +39,6 @@ public class SessionManager {
     public void removeSession(long id){
         Session session = sessions.get(id);
         if (session != null){
-            System.out.println("kdkd");
             session.dispose();
             sessions.remove(id);
         }

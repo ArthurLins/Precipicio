@@ -61,19 +61,11 @@ public class Session {
         this.arenaPlayer = arenaPlayer;
     }
 
-    public void dispose(){
-        if (room != null){
+    public void dispose() {
+        if (room != null) {
             room.removeUser(this);
         }
         arenaPlayer = null;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof Session){
-            return ((Session) obj).id == id;
-        }
-        return super.equals(obj);
     }
 
     public String getAvatar() {

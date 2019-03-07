@@ -33,11 +33,16 @@ public class PlayerMoveEvent implements Event {
             return;
         }
         room.setPlayingSession(null);
-        room.getArena().moveUserToDirection(session.getArenaPlayer(), direction);
+        room.getArena().movePlayer(session.getArenaPlayer(), direction);
+
         room.broadcast(new PlayerMovement(session.getId(),direction), session);
+
         session.getArenaPlayer().getTimeoutSchedule().cancel(true);
         session.getArenaPlayer().setTimeoutSchedule(null);
-        room.requestSessionMove();
+
+        if (room.getArena().getAlivePlayers().size() > 1){
+            room.requestSessionMove();
+        }
     }
 
 }

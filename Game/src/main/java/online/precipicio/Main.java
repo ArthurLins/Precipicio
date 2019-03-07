@@ -17,10 +17,10 @@ public class Main {
 
         //Vm args to debug: -Dorg.slf4j.simpleLogger.defaultLogLevel=debug
 
-        RoomManager.getInstance().createRoom(null);
+        //RoomManager.getInstance().createRoom(null);
         WebSocketEventHandler.getInstance();
         WebSocketServer.getInstance().initialize();
-        StatsUtil.getInstance().start();
+        //StatsUtil.getInstance().start();
 
         Thread thread = new Thread(()->{
             Scanner scanner = new Scanner(System.in);

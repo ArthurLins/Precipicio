@@ -2,6 +2,7 @@ package online.precipicio.game.util;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class StatsUtil {
@@ -29,13 +30,13 @@ public class StatsUtil {
     }
 
     public void start(){
-//        scheduledExecutor.scheduleAtFixedRate(()->{
-//            System.out.println("-------------------------------------------------------");
-//            System.out.println("Currentt rooms:          "+getValue(currentRooms));
-//            System.out.println("Currentt started rooms:  "+getValue(currentStartedRooms));
-//            System.out.println("Currentt  sessions:      "+getValue(currentSessions));
-//            System.out.println("-------------------------------------------------------");
-//        }, 0,5, TimeUnit.SECONDS);
+        scheduledExecutor.scheduleAtFixedRate(()->{
+            System.out.println("-------------------------------------------------------");
+            System.out.println("Currentt rooms:          "+getValue(currentRooms));
+            System.out.println("Currentt started rooms:  "+getValue(currentStartedRooms));
+            System.out.println("Currentt  sessions:      "+getValue(currentSessions));
+            System.out.println("-------------------------------------------------------");
+        }, 0,1, TimeUnit.SECONDS);
     }
 
 

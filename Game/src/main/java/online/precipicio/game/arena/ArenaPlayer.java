@@ -9,6 +9,8 @@ public class ArenaPlayer {
     private int x;
     private int y;
 
+    private boolean alive;
+
     private String skin;
 
     private Session session;
@@ -17,6 +19,7 @@ public class ArenaPlayer {
     public ArenaPlayer(Session session){
         this.session = session;
         this.skin = "";
+        alive = true;
     }
 
 
@@ -58,5 +61,17 @@ public class ArenaPlayer {
 
     public void setSkin(String color) {
         this.skin = color;
+    }
+
+    public boolean isAlive() {
+        return alive;
+    }
+
+    public void setAlive(boolean alive) {
+        this.alive = alive;
+    }
+
+    public void setSession(Session session) {
+        this.session = session;
     }
 }

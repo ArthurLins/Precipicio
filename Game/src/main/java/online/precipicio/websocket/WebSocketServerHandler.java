@@ -66,6 +66,8 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<WebSocke
     protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) {
         final String text = ((TextWebSocketFrame) frame).text();
 
+        logger.info(text);
+
         if (text.length() < 3) {
             return;
         }

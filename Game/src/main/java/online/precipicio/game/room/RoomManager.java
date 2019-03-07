@@ -21,17 +21,21 @@ public class RoomManager {
     private ConcurrentHashMap<String, Room> rooms = new ConcurrentHashMap<>();
 
     public void createRoom(Session session){
-        String uuid = "dbg";//UUID.randomUUID().toString();
+        String uuid = UUID.randomUUID().toString();
         rooms.put(uuid, new Room(uuid));
-        logger.debug("Room created with id: "+uuid);
-        //joinRoom(uuid, session, "red");
+        logger.info("Room created with id: "+uuid);
+
+        if (session != null) {
+            joinRoom(uuid, session);
+        }
+
         StatsUtil.getInstance().addRoom();
     }
 
     public void joinRoom(String uuid, Session session){
         if (rooms.containsKey(uuid)){
             rooms.get(uuid).addUser(session);
-            logger.debug("USER JOIN JOIN: " + session.getId());
+            logger.info("USER JOIN JOIN: " + session.getId());
         }
     }
 
@@ -39,5 +43,9 @@ public class RoomManager {
         if (rooms.containsKey(uuid)){
             rooms.get(uuid).removeUser(session);
         }
+    }
+
+    public void unloadRoom(){
+
     }
 }
