@@ -10,7 +10,7 @@ import online.precipicio.websocket.types.UserEvent;
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
 
-@UserEvent(id= UserEvents.CHAT_MESSAGE)
+@UserEvent(id=UserEvents.CHAT_MESSAGE)
 public class ChatMessageEvent implements Event {
     @Override
     public void handle(ClientMessage message) {

@@ -17,7 +17,11 @@ import online.precipicio.websocket.sessions.SessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
+
+import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
 public class WebSocketServerHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
 
@@ -41,7 +45,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<WebSocke
             ctx.close();
             return;
         }
-        SessionManager.getInstance().addSession(ctx.channel(), params.get("username"));
+        SessionManager.getInstance().addSession(ctx.channel(), escapeHtml4(URLDecoder.decode(params.get("username"), StandardCharsets.UTF_8.name())));
         logger.info("ADD Session (Total: "+ SessionManager.getInstance().activeSessions()+")");
         StatsUtil.getInstance().addSession();
     }
@@ -109,6 +113,10 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<WebSocke
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        if (cause instanceof StackOverflowError){
+
+            System.exit(1);
+        }
         cause.printStackTrace();
         if (ctx.channel().isActive()) {
             ctx.close();

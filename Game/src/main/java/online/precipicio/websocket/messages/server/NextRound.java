@@ -3,8 +3,6 @@ package online.precipicio.websocket.messages.server;
 import online.precipicio.game.arena.ArenaPlayer;
 import online.precipicio.websocket.headers.Messages;
 import online.precipicio.websocket.messages.structs.ArenaPlayerJson;
-import online.precipicio.websocket.messages.structs.UserJson;
-import online.precipicio.websocket.sessions.Session;
 import online.precipicio.websocket.types.ServerMessage;
 
 import java.util.ArrayList;
@@ -29,7 +27,7 @@ public class NextRound extends ServerMessage {
         writeLong("wi",this.winnerId);
         List<ArenaPlayerJson> activeUsers = new ArrayList<>();
         for (ArenaPlayer player : players){
-            activeUsers.add(new ArenaPlayerJson(player.getSession().getId(), player.getX(), player.getY()));
+            activeUsers.add(new ArenaPlayerJson(player.getSession().getId(), player.getCurrentSquare().getX(), player.getCurrentSquare().getY()));
         }
         writeObject("a", activeUsers);
     }

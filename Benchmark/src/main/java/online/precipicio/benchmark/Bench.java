@@ -8,7 +8,7 @@ public class Bench {
 
     public static void main(String... args) throws InterruptedException {
         //Create Rooms
-        int rooms = 50;
+        int rooms = 500;
         Globals.getInstance().bool.set(true);
         for (int i = 0; i < rooms; i++){
             try {

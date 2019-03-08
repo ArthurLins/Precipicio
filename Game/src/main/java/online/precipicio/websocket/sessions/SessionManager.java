@@ -31,7 +31,7 @@ public class SessionManager {
         channel.attr(WS_SESSION_ID).set(id);
         Session session = new Session(id, channel, name);
         //Temp
-        session.setAvatar("https://api.adorable.io/avatars/285/"+session.getId()+session.getName());
+        session.setAvatar("https://api.adorable.io/avatars/285/"+session.getId()+session.getName().replace(" ", ""));
         sessions.put(id, session);
 
     }

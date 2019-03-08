@@ -6,46 +6,34 @@ import java.util.concurrent.Future;
 
 public class ArenaPlayer {
 
-    private int x;
-    private int y;
-
-    private boolean alive;
 
     private String skin;
 
     private Session session;
     private Future timeoutSchedule;
 
+    private Square currentSquare;
+
+
     public ArenaPlayer(Session session){
         this.session = session;
+        session.setArenaPlayer(this);
         this.skin = "";
-        alive = true;
     }
 
 
-    public boolean isValidMove(int x, int y){
-        return (x == this.x || x == (this.x + 1) || x == (this.x - 1)) && ((y == this.y) || y == (this.y + 1) || y == (this.y - 1));
+    public Square getCurrentSquare() {
+        return currentSquare;
     }
 
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
+    public void setCurrentSquare(Square currentSquare) {
+        this.currentSquare = currentSquare;
     }
 
     public Session getSession() {
         return session;
     }
 
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public void setY(int y) {
-        this.y = y;
-    }
 
     public String getSkin() {
         return skin;
@@ -61,14 +49,6 @@ public class ArenaPlayer {
 
     public void setSkin(String color) {
         this.skin = color;
-    }
-
-    public boolean isAlive() {
-        return alive;
-    }
-
-    public void setAlive(boolean alive) {
-        this.alive = alive;
     }
 
     public void setSession(Session session) {

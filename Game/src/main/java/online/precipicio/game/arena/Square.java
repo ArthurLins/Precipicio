@@ -2,31 +2,19 @@ package online.precipicio.game.arena;
 
 public class Square {
 
-    private int x;
-    private int y;
     private ArenaPlayer arenaPlayer;
 
+    private final int x;
+    private final int y;
+
+
+
     public Square(int x, int y) {
-        this.x = x;
-        this.y = y;
         arenaPlayer = null;
-    }
-
-    public int getX() {
-        return x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public void setX(int x) {
         this.x = x;
-    }
-
-    public void setY(int y) {
         this.y = y;
     }
+
 
     public ArenaPlayer getArenaPlayer() {
         return arenaPlayer;
@@ -38,5 +26,23 @@ public class Square {
 
     public void removePlayer(){
         arenaPlayer = null;
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    public boolean hasPlayer(){
+        return arenaPlayer != null;
+    }
+
+
+    @Override
+    public String toString() {
+        return "["+((this.arenaPlayer == null) ? 0 : arenaPlayer.getSession().getId())+"]";
     }
 }
