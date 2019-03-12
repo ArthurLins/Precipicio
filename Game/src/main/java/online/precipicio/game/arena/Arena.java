@@ -4,7 +4,6 @@ import online.precipicio.game.room.Room;
 import online.precipicio.game.util.ArenaSpawnUtil;
 import online.precipicio.game.util.Direction;
 import online.precipicio.game.util.Position;
-import online.precipicio.websocket.messages.server.ScoreboardPoint;
 import online.precipicio.websocket.sessions.Session;
 
 import java.util.ArrayList;
@@ -141,14 +140,7 @@ public class Arena {
 
     public void removePlayer(ArenaPlayer arenaPlayer){
         players.remove(arenaPlayer);
-        if (arenaPlayer.getCurrentSquare() != null){
-            Square square = getSquare(arenaPlayer.getCurrentSquare().getX(), arenaPlayer.getCurrentSquare().getY());
-            arenaPlayer.setCurrentSquare(null);
-            if (square == null){
-                return;
-            }
-            square.removePlayer();
-        }
+        removeFromSquare(arenaPlayer);
     }
 
     public void reset(){
@@ -191,6 +183,17 @@ public class Arena {
         room = null;
     }
 
+
+    private void removeFromSquare(ArenaPlayer player){
+        for (int y = 0; y < length; y++){
+            for (int x = 0; x < width; x++){
+                if(squares[x][y].getArenaPlayer() == player){
+                    squares[x][y].removePlayer();
+                    player.setCurrentSquare(null);
+                }
+            }
+        }
+    }
 
     @Override
     public String toString() {

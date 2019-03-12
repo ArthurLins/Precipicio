@@ -1,5 +1,6 @@
-package online.precipicio.websocket.messages.server;
+package online.precipicio.websocket.messages.server.room;
 
+import online.precipicio.game.room.RoomState;
 import online.precipicio.websocket.headers.Messages;
 import online.precipicio.websocket.types.ServerMessage;
 

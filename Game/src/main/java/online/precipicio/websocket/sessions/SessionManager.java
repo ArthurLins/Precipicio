@@ -1,6 +1,7 @@
 package online.precipicio.websocket.sessions;
 
 import io.netty.channel.Channel;
+import online.precipicio.game.realtime.RealTimeInfosService;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -26,18 +27,17 @@ public class SessionManager {
         return sessions.get(id);
     }
 
-    public void addSession(Channel channel, String name){
+    public void addSession(Channel channel){
         long id = ids.getAndIncrement();
         channel.attr(WS_SESSION_ID).set(id);
-        Session session = new Session(id, channel, name);
-        //Temp
-        session.setAvatar("https://api.adorable.io/avatars/285/"+session.getId()+session.getName().replace(" ", ""));
+        Session session = new Session(id, channel);
         sessions.put(id, session);
-
+        RealTimeInfosService.getInstance().subscribe(session);
     }
 
     public void removeSession(long id){
         Session session = sessions.get(id);
+        RealTimeInfosService.getInstance().unsubscribe(session);
         if (session != null){
             session.dispose();
             sessions.remove(id);

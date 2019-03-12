@@ -15,7 +15,7 @@ public class Session {
     private Logger logger = LoggerFactory.getLogger(this.getClass().getSimpleName());
 
     private final long id;
-    private final String name;
+    private String name;
     private String avatar;
     private final Channel channel;
 
@@ -23,9 +23,9 @@ public class Session {
     private ArenaPlayer arenaPlayer;
 
 
-    public Session(long id, Channel channel, String name) {
+    public Session(long id, Channel channel) {
         this.id = id;
-        this.name = name;
+        this.name = null;
         this.channel = channel;
     }
 
@@ -74,5 +74,9 @@ public class Session {
 
     public void setAvatar(String avatar) {
         this.avatar = avatar;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

@@ -5,6 +5,12 @@ import online.precipicio.game.arena.ArenaPlayer;
 import online.precipicio.game.util.StatsUtil;
 import online.precipicio.threading.ThreadPool;
 import online.precipicio.websocket.messages.server.*;
+import online.precipicio.websocket.messages.server.auth.InvalidUsername;
+import online.precipicio.websocket.messages.server.lobby.RoomFull;
+import online.precipicio.websocket.messages.server.room.*;
+import online.precipicio.websocket.messages.server.room.player.PlayerJoin;
+import online.precipicio.websocket.messages.server.room.player.PlayerLeave;
+import online.precipicio.websocket.messages.server.room.player.SelfJoin;
 import online.precipicio.websocket.sessions.Session;
 import online.precipicio.websocket.types.ServerMessage;
 
@@ -19,15 +25,16 @@ public class Room {
     private Arena arena;
     private RoomState state;
 
-    private AtomicBoolean roundFinished = new AtomicBoolean(false);
-
     private int timeout; //seconds
     private int maxRounds;
     private int roundCount;
     private int maxPlayers;
+    private int minPlayers;
     private int newGameTime;
     private int width;
     private int height;
+
+    private List<Session> fastStart = new CopyOnWriteArrayList<>();
 
     private volatile Session playingSession;
 
@@ -38,6 +45,7 @@ public class Room {
         maxRounds = 5;
         roundCount = 0;
         maxPlayers = 6;
+        minPlayers = 2;
         width = 6;
         height = 5;
 
@@ -51,6 +59,12 @@ public class Room {
 
 
     public void addUser(Session session){
+
+        if (session.getName() == null){
+            session.send(new InvalidUsername());
+            return;
+        }
+
         if (sessions.size() == this.maxPlayers) {
             session.send(new RoomFull());
             return;
@@ -58,10 +72,11 @@ public class Room {
         if (sessions.contains(session)){
             return;
         }
+        //Add player in room
         sessions.add(session);
+        //add player in arena
         arena.addPlayer(session);
         session.setRoom(this);
-
 
         //Transmit to users
         session.send(new RoomInfos(this.uuid, timeout, maxRounds, width, height));
@@ -71,15 +86,23 @@ public class Room {
         session.send(new SelfJoin(session.getId(), session.getName(), randomImg,10,randomImg, sessions));
         broadcast(new PlayerJoin(session.getId(), session.getName(), randomImg, 10, randomImg), session);
 
-        //time
-        if((sessions.size()) == this.maxPlayers && this.state == RoomState.WAITING){
-            StatsUtil.getInstance().addStartedRoom();
-            this.state = RoomState.STARTED;
-            nextRound();
+
+        //Add vote button to user screen
+        if (sessions.size() == minPlayers){
+            broadcast(new VoteStartButton(true));
+        } else if (sessions.size() > minPlayers) {
+            session.send(new VoteStartButton(true));
         }
 
-        if (this.state == RoomState.WAITING){
+
+        //time
+        if((sessions.size()) == this.maxPlayers && this.state == RoomState.WAITING){
+            startGame();
+        }
+
+        if (this.state != RoomState.WAITING){
             ///Todo::
+            broadcast(new NextRound(this.roundCount, arena.getPlayers(), 0));
             //session.send(new);
         }
     }
@@ -88,16 +111,30 @@ public class Room {
         long id = session.getId();
         arena.removePlayer(session.getArenaPlayer());
         sessions.remove(session);
+       //Stop game if only have one player
         if (this.state == RoomState.STARTED){
             if (sessions.size() <= 1){
                stopGame();
-            } else {
-                if (playingSession == session){
-                    requestSessionMove();
-                }
             }
         }
+        //Unload room
+        if (sessions.isEmpty()){
+            RoomManager.getInstance().unloadRoom(this);
+            return;
+        }
+        //Clear fast start
+        if (sessions.size() == 1){
+            fastStart.clear();
+            broadcast(new VoteStartButton(false));
+        }
         broadcast(new PlayerLeave(id));
+    }
+
+    private void startGame(){
+        StatsUtil.getInstance().addStartedRoom();
+        this.state = RoomState.STARTED;
+        broadcast(new VoteStartButton(false));
+        ThreadPool.getInstance().shedule(this::nextRound, 2);
     }
 
     private void stopGame() {
@@ -125,8 +162,7 @@ public class Room {
 
 
 
-    public void nextRound(){
-        System.out.println("NOVO ROUND");
+    private void nextRound(){
         if (this.state != RoomState.STARTED){
             return;
         }
@@ -134,6 +170,18 @@ public class Room {
             gameOver();
             return;
         }
+
+        playingSession = null;
+
+        for (Session session: sessions){
+            if (session.getArenaPlayer() != null){
+                if (session.getArenaPlayer().getTimeoutSchedule() != null){
+                    session.getArenaPlayer().getTimeoutSchedule().cancel(true);
+                    session.getArenaPlayer().setTimeoutSchedule(null);
+                }
+            }
+        }
+
         this.roundCount++;
 
         arena.reset();
@@ -170,6 +218,7 @@ public class Room {
 
     public void gameOver(){
         if (roundCount+1 > maxRounds || sessions.size() == 1){
+            broadcast(new GameFinished());
             StatsUtil.getInstance().removeStartedRoom();
             this.roundCount = 0;
             if (sessions.size() == maxPlayers){
@@ -178,13 +227,16 @@ public class Room {
                     if (sessions.size() == maxPlayers){
                         this.nextRound();
                     } else {
+                        this.state = RoomState.WAITING;
                         broadcast(new InsuficientUsersToStart());
+                        broadcast(new VoteStartButton(true));
                     }
                 }, newGameTime);
                 return;
+            } else {
+                broadcast(new VoteStartButton(true));
             }
             this.state = RoomState.WAITING;
-            broadcast(new GameFinished());
             return;
         }
         ThreadPool.getInstance().shedule(this::nextRound, 2);
@@ -216,6 +268,21 @@ public class Room {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public boolean isFull(){
+        return sessions.size() == maxPlayers;
+    }
+
+    public void voteStart(Session session){
+        if (state != RoomState.WAITING){
+            return;
+        }
+        fastStart.add(session);
+        if (sessions.size() >= minPlayers && fastStart.size() == sessions.size()){
+            startGame();
+            fastStart.clear();
+        }
     }
 
     public void dispose(){

@@ -1,13 +1,13 @@
-package online.precipicio.websocket.messages.server;
+package online.precipicio.websocket.messages.server.auth;
 
 import online.precipicio.websocket.headers.Messages;
 import online.precipicio.websocket.types.ServerMessage;
 
 
-public class RoomNotFound extends ServerMessage {
+public class LoginOK extends ServerMessage {
 
-    public RoomNotFound() {
-        super(Messages.ROOM_NOT_FOUND);
+    public LoginOK() {
+        super(Messages.LOGIN_OK);
     }
 
     @Override

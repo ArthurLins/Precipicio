@@ -11,10 +11,12 @@ import java.util.Scanner;
 
 public class Main {
 
+    public static String[] args;
     public static Reflections reflections = new Reflections(Main.class.getPackage().getName());
 
     public static void main(String... args){
 
+        Main.args = args;
         //Vm args to debug: -Dorg.slf4j.simpleLogger.defaultLogLevel=debug
 
         //RoomManager.getInstance().createRoom(null);

@@ -1,4 +1,4 @@
-package online.precipicio.websocket.messages.server;
+package online.precipicio.websocket.messages.server.room;
 
 import online.precipicio.game.arena.ArenaPlayer;
 import online.precipicio.websocket.headers.Messages;

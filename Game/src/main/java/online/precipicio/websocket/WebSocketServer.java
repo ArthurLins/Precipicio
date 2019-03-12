@@ -14,10 +14,13 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.ResourceLeakDetector;
+import online.precipicio.Main;
 import online.precipicio.websocket.codec.WebSocketServerProtocolHandler;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.TimeUnit;
 
 
 public class WebSocketServer {
@@ -36,7 +39,7 @@ public class WebSocketServer {
 
         this.serverBootstrap = new ServerBootstrap();
 
-        this.isEpollEnabled = true;
+        this.isEpollEnabled = Boolean.parseBoolean(Main.args[1]);
         this.isEpollAvailable = Epoll.isAvailable();
         final int defaultThreadCount = 20;
 
@@ -69,10 +72,10 @@ public class WebSocketServer {
             public void initChannel(SocketChannel socketChannel) {
                 final ChannelPipeline pipeline = socketChannel.pipeline();
                 pipeline.addLast(new HttpServerCodec())
-                        .addLast(new HttpObjectAggregator(65536))
-                        .addLast(new WebSocketServerProtocolHandler())
-                        .addLast(new WebSocketServerCompressionHandler())
-                        .addLast(new WebSocketServerHandler());
+                    .addLast(new HttpObjectAggregator(65536))
+                    .addLast(new WebSocketServerProtocolHandler())
+                    .addLast(new WebSocketServerCompressionHandler())
+                    .addLast(new WebSocketServerHandler());
 
             }
         });
@@ -80,12 +83,9 @@ public class WebSocketServer {
         this.serverBootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
         //this.serverBootstrap.childOption(ChannelOption.SO_REUSEADDR, true);
         try {
-            this.serverBootstrap.bind(new InetSocketAddress("127.0.0.1", port));
-
-            //log.info("CometServer WS listening on port: " + port);
+            this.serverBootstrap.bind(new InetSocketAddress(Main.args[0], port));
         } catch (Exception e) {
             //log.error(e);
-            //Comet.exit("Error on start Websocket on port: " + port);
         }
     }
 }

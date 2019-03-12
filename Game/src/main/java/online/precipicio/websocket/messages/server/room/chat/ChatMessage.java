@@ -1,4 +1,4 @@
-package online.precipicio.websocket.messages.server;
+package online.precipicio.websocket.messages.server.room.chat;
 
 import online.precipicio.websocket.headers.Messages;
 import online.precipicio.websocket.types.ServerMessage;

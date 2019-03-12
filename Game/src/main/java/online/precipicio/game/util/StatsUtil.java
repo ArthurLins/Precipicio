@@ -41,7 +41,6 @@ public class StatsUtil {
 
 
     public void addRoom(){
-        System.out.println("HERE");
         currentRooms.incrementAndGet();
     }
     public void removeRoom(){

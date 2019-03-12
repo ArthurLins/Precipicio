@@ -1,7 +1,6 @@
 package online.precipicio.game.room;
 
 import online.precipicio.game.util.StatsUtil;
-import online.precipicio.websocket.messages.server.RoomNotFound;
 import online.precipicio.websocket.sessions.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,7 +37,15 @@ public class RoomManager {
             rooms.get(uuid).addUser(session);
             logger.info("USER JOIN JOIN: " + session.getId());
         } else  {
-            session.send(new RoomNotFound());
+            //Random join
+            for (Room room: rooms.values()){
+                if (!room.isFull()){
+                    room.addUser(session);
+                    return;
+                }
+            }
+            createRoom(session);
+            //session.send(new RoomNotFound());
         }
     }
 
@@ -53,5 +60,9 @@ public class RoomManager {
             rooms.remove(room.getUuid());
             room.dispose();
         }
+    }
+
+    public int currentRoomsQty(){
+        return rooms.size();
     }
 }

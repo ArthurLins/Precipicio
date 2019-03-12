@@ -13,8 +13,9 @@ public class Bench {
         for (int i = 0; i < rooms; i++){
             try {
 
-                WebSocketClient client = new WebSocketClient("ws://127.0.0.1:8081?username=ddjdjd");
+                WebSocketClient client = new WebSocketClient("ws://127.0.0.1:8081?");
                 client.open();
+                client.eval("[9,{\"n\":\"atu\"}]");
                 client.eval("[6,{}]");
             } catch (Exception e) {
                 e.printStackTrace();
@@ -30,6 +31,7 @@ public class Bench {
                         try {
                             WebSocketClient clientPlayer = new WebSocketClient("ws://127.0.0.1:8081?username=ddjdjd");
                             clientPlayer.open();
+                            clientPlayer.eval("[9,{\"n\":\"atu\"}]");
                             clientPlayer.eval("[4,{\"r\":\"" + roomId + "\", \"c\":\"red\"}]");
                         } catch (Exception e) {
                             e.printStackTrace();

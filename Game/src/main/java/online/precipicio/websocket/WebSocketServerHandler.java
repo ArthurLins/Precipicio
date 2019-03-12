@@ -8,6 +8,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.websocketx.CloseWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.util.AttributeKey;
 import online.precipicio.game.room.RoomManager;
 import online.precipicio.game.util.StatsUtil;
@@ -35,17 +36,23 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<WebSocke
         if (!(evt instanceof WebSocketServerProtocolHandler.HandshakeComplete)){
             return;
         }
-        final Map<String, String> params = ctx.channel().attr(WS_SESSION_PARAMS).get();
-        if (params.isEmpty()){
-            ctx.close();
-            return;
-        }
 
-        if (params.get("username").length() > 25){
-            ctx.close();
-            return;
+        System.out.println(evt);
+
+        if (evt == IdleStateEvent.ALL_IDLE_STATE_EVENT){
+            System.out.println("Idle");
         }
-        SessionManager.getInstance().addSession(ctx.channel(), escapeHtml4(URLDecoder.decode(params.get("username"), StandardCharsets.UTF_8.name())));
+//        final Map<String, String> params = ctx.channel().attr(WS_SESSION_PARAMS).get();
+//        if (params.isEmpty()){
+//            ctx.close();
+//            return;
+//        }
+//
+//        if (params.get("username").length() > 25){
+//            ctx.close();
+//            return;
+//        }
+        SessionManager.getInstance().addSession(ctx.channel());
         logger.info("ADD Session (Total: "+ SessionManager.getInstance().activeSessions()+")");
         StatsUtil.getInstance().addSession();
     }
@@ -61,7 +68,7 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<WebSocke
         if (id == null){
             return;
         }
-        logger.debug("REMOVE Session");
+        logger.info("REMOVE Session (Total: "+ SessionManager.getInstance().activeSessions()+")");
         SessionManager.getInstance().removeSession(id);
         StatsUtil.getInstance().removeSession();
     }
@@ -83,8 +90,6 @@ public class WebSocketServerHandler extends SimpleChannelInboundHandler<WebSocke
             return;
         }
         int header = element.getAsJsonArray().get(0).getAsInt();
-
-
 
         if (!element.getAsJsonArray().get(1).isJsonObject()){
             ctx.writeAndFlush(new CloseWebSocketFrame());

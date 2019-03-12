@@ -9,6 +9,8 @@ public enum UserEvents {
     PLAYER_MOVE(5),
     CREATE_ROOM(6),
     CHAT_MESSAGE(7),
+    LOGIN(9),
+    VOTE_START(10),
     ROOM_OK(8);
 
     private int val;
